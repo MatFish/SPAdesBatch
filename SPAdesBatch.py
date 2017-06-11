@@ -2,8 +2,7 @@
 
 import subprocess
 import glob
-#import string
-# No need to import string module in recent versions of Python
+from Bio import SeqIO
 import re
 
 def size_input():
@@ -88,21 +87,20 @@ def parameter_input():
             print 'Please try again. \n'
             continue
 
-def fasta_to_tab():
-    """Converts fasta output from SPAdes into tab format for easier filtering"""
-    with open(out + '/' + 'contigs.fasta', 'r') as f, open(out + '/' + 'contigs.tab', 'w') as file_out:
-        for line in f:
-            line = line.strip()
-            if line[0] == '>':
-                 file_out.write('{}\t'.format(line))
-            else:
-                 file_out.write('{}\n'.format(line))
-
 def size_filter():
+    """ Filters SPAdes output by size"""
+    contigs = [rec for rec in SeqIO.parse(fasta, 'fasta')]
+    filter_by_size = [c for c in contigs if float(c.name.split('_')[3] >= float(size_input())
+        continue
 
-def pre_blast_filter():
-    fasta_to_tab()
-    subprocess.call([])
+def coverage_filter():
+    """ Filters SPAdes output by coverage"""
+
+    contigs = size_filter()
+
+    filter_by_cov = [c for c in contigs if float(c.name.split('_')[5] >= float(cov_input)
+
+        continue
 
 def pipeline():
     """Finds each set of paired reads and assigns them to variable R1 and R2.
