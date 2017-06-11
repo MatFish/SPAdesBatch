@@ -1,4 +1,10 @@
-import subprocess, glob, string, re
+#!/usr/bin env python3
+
+import subprocess
+import glob
+#import string
+# No need to import string module in recent versions of Python
+import re
 
 def size_input():
     """Sets size cut-off and check for valid user input."""
@@ -105,7 +111,7 @@ def pipeline():
     for file in glob.glob('*_R1_*fastq*'):
         global R1, R2, out
         R1 = file
-        R2 = string.replace(R1, '_R1_', '_R2_')
+        R2 = str.replace(R1, '_R1_', '_R2_')
         out = re.sub(r'.fastq.*', '', R1) + '_SpadesOutput'
         if assemble_choice == '1':                              
             subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out])
