@@ -9,12 +9,12 @@ def size_input():
     """Sets size cut-off and check for valid user input."""
     global size
     while True:
-        size = raw_input('Enter size cut-off for SPAdes output (Press enter for 500 bp default): ')
+        size = input('Enter size cut-off for SPAdes output (Press enter for 500 bp default): ')
         if size == '':
             size = 500
             break
         elif not size.isdigit():
-            print 'Invalid input. Please try again'
+            print('Invalid input. Please try again')
             continue
         else:
             break 
@@ -23,12 +23,12 @@ def cov_input():
     """Sets coverage cut-off and check for valid user input."""
     global cov
     while True:
-        cov = raw_input('Enter coverage cut-off for blast output (Press enter for 10 times default): ')
+        cov = input('Enter coverage cut-off for blast output (Press enter for 10 times default): ')
         if cov == '':
             cov = 10
             break
         elif not cov.isdigit():  
-            print 'Invalid input. Please try again'
+            print('Invalid input. Please try again')
             continue
         else:
             break 
@@ -37,15 +37,15 @@ def assemble_type():
     """Asks user what settings they would like to use for SPAdes assembly"""
     global assemble_choice, final_choice
     while True:
-        print '\nWhat type of SPAdes assembly would you like to run?\n'
-        print '   1) SPAdes w/ error correct and assemble'
-        print '   2) SPAdes careful w/ error correct and assemble'
-        print '   3) metaSPAdes w/ error correct and assemble'
-        print '   4) SPAdes w/ assemble only'
-        print '   5) SPAdes careful w/ assemble only'
-        print '   6) metaSPAdes w/ assemble only'
-        print '   7) Custom input (manually enter options)\n'
-        assemble_choice = raw_input('Enter the number for your selection: ')
+        print('\nWhat type of SPAdes assembly would you like to run?\n')
+        print('   1) SPAdes w/ error correct and assemble')
+        print('   2) SPAdes careful w/ error correct and assemble')
+        print('   3) metaSPAdes w/ error correct and assemble')
+        print('   4) SPAdes w/ assemble only')
+        print('   5) SPAdes careful w/ assemble only')
+        print('   6) metaSPAdes w/ assemble only')
+        print('   7) Custom input (manually enter options)\n')
+        assemble_choice = input('Enter the number for your selection: ')
         if assemble_choice == '1':
             final_choice = 'SPAdes w/ error correction and assembly'
             break
@@ -65,12 +65,12 @@ def assemble_type():
             final_choice = 'metaSPAdes w/ assemble only'
             break
         elif assemble_choice == '7': 
-            print '\nEnter modifiers/parameters as you would enter then into a manual SPAdes run (eg. --meta).'
-            print 'Do not enter input file name(s) and output folder name as they will be automatically selected.'
-            final_choice = raw_input('Enter custom options: ')
+            print('\nEnter modifiers/parameters as you would enter then into a manual SPAdes run (eg. --meta).')
+            print('Do not enter input file name(s) and output folder name as they will be automatically selected.')
+            final_choice = input('Enter custom options: ')
             break
         else:
-            print 'Invalid input. Please try again'
+            print('Invalid input. Please try again')
             continue
 
 def parameter_input():
@@ -79,28 +79,29 @@ def parameter_input():
         size_input()
         cov_input()
         assemble_type()
-        print '\n***CURRENT SETTINGS***\n   - Size cut-off:', size, 'bp\n   - Coverage cut-off:', cov, 'times\n   - Assembly type:', final_choice
-        begin = raw_input('\nContinue (Y/N)? ').lower()
+        print('\n***CURRENT SETTINGS***\n   - Size cut-off:', size, 'bp\n   - Coverage cut-off:', cov, 'times\n   - Assembly type:', final_choice)
+        begin = input('\nContinue (Y/N)? ').lower()
         if begin[0] == 'y':
             break
         else:
-            print 'Please try again. \n'
+            print('Please try again. \n')
             continue
 
 def size_filter():
     """ Filters SPAdes output by size"""
-    contigs = [rec for rec in SeqIO.parse(fasta, 'fasta')]
-    filter_by_size = [c for c in contigs if float(c.name.split('_')[3] >= float(size_input())
-        continue
+    contigs = [rec for rec in SeqIO.parse('contigs.fasta', 'fasta')]
+    filter_by_size = [c for c in contigs if float(c.name.split('_')[3]) >= float(size_input())]
+
+    return filter_by_size
 
 def coverage_filter():
     """ Filters SPAdes output by coverage"""
 
     contigs = size_filter()
 
-    filter_by_cov = [c for c in contigs if float(c.name.split('_')[5] >= float(cov_input)
+    filter_by_cov = [c for c in contigs if float(c.name.split('_')[5]) >= float(cov_input)]
 
-        continue
+    return filter_by_cov
 
 def pipeline():
     """Finds each set of paired reads and assigns them to variable R1 and R2.
