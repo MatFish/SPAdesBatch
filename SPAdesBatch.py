@@ -137,5 +137,4 @@ def pipeline():
 
 parameter_input()
 pipeline()
-size_filter()
-coverage_filter()
+size_and_cov_filter()
