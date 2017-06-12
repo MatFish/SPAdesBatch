@@ -99,16 +99,16 @@ def size_and_cov_filter():
         contig_dict[fasta] = [rec for rec in SeqIO.parse(fasta, 'fasta')]
         
         for keys,values in cov_dir.iteritems():
-        contig_dict[keys] = [v for v in values if 
-                float(v.name.split('_')[3]) >= float(size_input()) and 
-                float(v.name.split('_')[5]) >= float(cov_input())
-                ]
-
-        filtered_filename = str.replace(k,".fasta","")
-
-        new_extension = "filtered.fasta"
-
-        SeqIO.write(v, os.path.join(filtered_filename + new_extension), 'fasta')
+            contig_dict[keys] = [v for v in values if 
+                    float(v.name.split('_')[3]) >= float(size_input()) and 
+                    float(v.name.split('_')[5]) >= float(cov_input())
+                    ]
+            
+            filtered_filename = str.replace(k,".fasta","")
+            
+            new_extension = "filtered.fasta"
+            
+            SeqIO.write(v, os.path.join(filtered_filename + new_extension), 'fasta')
 
 def pipeline():
     """Finds each set of paired reads and assigns them to variable R1 and R2.
