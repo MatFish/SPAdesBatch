@@ -12,8 +12,9 @@ def size_input():
     global size
     while True:
         size = input('Enter size cut-off for SPAdes output (Press enter for 500 bp default): ')
-        if size == '':
-            size = 500
+        default_size = 500
+        if not size:
+            size = default_size
             break
         elif not size.isdigit():
             print('Invalid input. Please try again')
@@ -25,9 +26,10 @@ def cov_input():
     """Sets coverage cut-off and check for valid user input."""
     global cov
     while True:
-        cov = input('Enter coverage cut-off for blast output (Press enter for 10 times default): ')
-        if cov == '':
-            cov = 10
+        cov = input('Enter coverage cut-off for SPAdes output (Press enter for 10 times default): ')
+        default_cov = 10
+        if not cov:
+            cov = default_cov
             break
         elif not cov.isdigit():  
             print('Invalid input. Please try again')
@@ -93,19 +95,19 @@ def size_and_cov_filter():
     """ Filters SPAdes output by size and coverage """
 
     contig_dict = defaultdict(list)
-
+        
     for fasta in glob.glob('*/contigs.fasta'):
-        
+            
         contig_dict[fasta] = [rec for rec in SeqIO.parse(fasta, 'fasta')]
-        
+            
     for keys,values in contig_dict.items():
+            
+        contig_dict[keys] = [v for v in values if float(v.name.split('_')[5]) >= float(cov) and float(v.name.split('_')[3]) >= float(size)]
 
-        contig_dict[keys] = [v for v in values 
-        if float(v.name.split('_')[5]) >= float(cov) 
-        and float(v.name.split('_')[3]) >= float(size)]
-            
+    for keys,values in contig_dict.items():
+        
         filtered_filename = str.replace(keys,".fasta","_filtered.fasta")
-            
+        
         SeqIO.write(values, filtered_filename, 'fasta')
 
 def pipeline():
