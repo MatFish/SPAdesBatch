@@ -33,7 +33,7 @@ def cov_input():
             print('Invalid input. Please try again')
             continue
         else:
-            break 
+            break
 
 def assemble_type():
     """Asks user what settings they would like to use for SPAdes assembly"""
@@ -98,17 +98,15 @@ def size_and_cov_filter():
         
         contig_dict[fasta] = [rec for rec in SeqIO.parse(fasta, 'fasta')]
         
-        for keys,values in cov_dir.iteritems():
-            contig_dict[keys] = [v for v in values if 
-                    float(v.name.split('_')[3]) >= float(size_input()) and 
-                    float(v.name.split('_')[5]) >= float(cov_input())
-                    ]
+    for keys,values in contig_dict.items():
+
+        contig_dict[keys] = [v for v in values 
+        if float(v.name.split('_')[5]) >= float(cov) 
+        and float(v.name.split('_')[3]) >= float(size)]
             
-            filtered_filename = str.replace(k,".fasta","")
+        filtered_filename = str.replace(keys,".fasta","_filtered.fasta")
             
-            new_extension = "filtered.fasta"
-            
-            SeqIO.write(v, os.path.join(filtered_filename + new_extension), 'fasta')
+        SeqIO.write(values, filtered_filename, 'fasta')
 
 def pipeline():
     """Finds each set of paired reads and assigns them to variable R1 and R2.
@@ -120,19 +118,19 @@ def pipeline():
         R2 = str.replace(R1, '_R1_', '_R2_')
         out = re.sub(r'.fastq.*', '', R1) + '_SpadesOutput'
         if assemble_choice == '1':                              
-            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out])
+            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out])
         elif assemble_choice == '2':
-            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--careful'])
+            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--careful'])
         elif assemble_choice == '3':
-            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--meta'])
+            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--meta'])
         elif assemble_choice == '4':                                                                                                                                            
-            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--only-assembler'])                                                                       
+            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--only-assembler'])                                                                       
         elif assemble_choice == '5':
-            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--careful', '--only-assembler'])
+            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--careful', '--only-assembler'])
         elif assemble_choice == '6':
-            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--meta', '--only-assembler'])
+            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--meta', '--only-assembler'])
         elif assemble_choice == '7':
-            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, final_choice])
+            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, final_choice])
         #pre_blast_filter()
 
 parameter_input()
