@@ -2,7 +2,6 @@
 
 import subprocess
 import glob
-import os
 from Bio import SeqIO
 from collections import defaultdict
 import re
