@@ -94,7 +94,7 @@ def size_and_cov_filter():
 
     contig_dict = defaultdict(list)
 
-    for fasta in glob.glob('*/*/contigs.fasta'):
+    for fasta in glob.glob('*/contigs.fasta'):
         
         contig_dict[fasta] = [rec for rec in SeqIO.parse(fasta, 'fasta')]
         
