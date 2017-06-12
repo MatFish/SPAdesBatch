@@ -2,7 +2,9 @@
 
 import subprocess
 import glob
+import os
 from Bio import SeqIO
+from collections import defaultdict
 import re
 
 def size_input():
@@ -87,21 +89,26 @@ def parameter_input():
             print('Please try again. \n')
             continue
 
-def size_filter():
-    """ Filters SPAdes output by size"""
-    contigs = [rec for rec in SeqIO.parse('contigs.fasta', 'fasta')]
-    filter_by_size = [c for c in contigs if float(c.name.split('_')[3]) >= float(size_input())]
+def size_and_cov_filter():
+    """ Filters SPAdes output by size and coverage """
 
-    return filter_by_size
+    contig_dict = defaultdict(list)
 
-def coverage_filter():
-    """ Filters SPAdes output by coverage"""
+    for fasta in glob.glob('*/*/contigs.fasta'):
+        
+        contig_dict[fasta] = [rec for rec in SeqIO.parse(fasta, 'fasta')]
+        
+        for keys,values in cov_dir.iteritems():
+        contig_dict[keys] = [v for v in values if 
+                float(v.name.split('_')[3]) >= float(size_input()) and 
+                float(v.name.split('_')[5]) >= float(cov_input())
+                ]
 
-    contigs = size_filter()
+        filtered_filename = str.replace(k,".fasta","")
 
-    filter_by_cov = [c for c in contigs if float(c.name.split('_')[5]) >= float(cov_input)]
+        new_extension = "filtered.fasta"
 
-    return filter_by_cov
+        SeqIO.write(v, os.path.join(filtered_filename + new_extension), 'fasta')
 
 def pipeline():
     """Finds each set of paired reads and assigns them to variable R1 and R2.
@@ -113,20 +120,22 @@ def pipeline():
         R2 = str.replace(R1, '_R1_', '_R2_')
         out = re.sub(r'.fastq.*', '', R1) + '_SpadesOutput'
         if assemble_choice == '1':                              
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out])
         elif assemble_choice == '2':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--careful'])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--careful'])
         elif assemble_choice == '3':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--meta'])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--meta'])
         elif assemble_choice == '4':                                                                                                                                            
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--only-assembler'])                                                                       
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--only-assembler'])                                                                       
         elif assemble_choice == '5':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--careful', '--only-assembler'])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--careful', '--only-assembler'])
         elif assemble_choice == '6':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--meta', '--only-assembler'])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--meta', '--only-assembler'])
         elif assemble_choice == '7':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, final_choice])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, final_choice])
         #pre_blast_filter()
 
 parameter_input()
 pipeline()
+size_filter()
+coverage_filter()
