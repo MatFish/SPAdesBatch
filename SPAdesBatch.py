@@ -124,8 +124,8 @@ def pipeline():
             subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--meta', '--only-assembler'])
         elif assemble_choice == '7':
             subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, final_choice])
-        #pre_blast_filter()
+        size_and_cov_filter()
 
 parameter_input()
 pipeline()
-size_and_cov_filter()
+
