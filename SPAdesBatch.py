@@ -1,15 +1,22 @@
-import subprocess, glob, string, re
+#!/usr/bin/env python3
+
+import subprocess
+import glob
+from Bio import SeqIO
+from collections import defaultdict
+import re
 
 def size_input():
     """Sets size cut-off and check for valid user input."""
     global size
     while True:
-        size = raw_input('Enter size cut-off for SPAdes output (Press enter for 500 bp default): ')
-        if size == '':
-            size = 500
+        size = input('Enter size cut-off for SPAdes output (Press enter for 500 bp default): ')
+        default_size = 500
+        if not size:
+            size = default_size
             break
         elif not size.isdigit():
-            print 'Invalid input. Please try again'
+            print('Invalid input. Please try again')
             continue
         else:
             break 
@@ -18,29 +25,30 @@ def cov_input():
     """Sets coverage cut-off and check for valid user input."""
     global cov
     while True:
-        cov = raw_input('Enter coverage cut-off for blast output (Press enter for 10 times default): ')
-        if cov == '':
-            cov = 10
+        cov = input('Enter coverage cut-off for SPAdes output (Press enter for 10 times default): ')
+        default_cov = 10
+        if not cov:
+            cov = default_cov
             break
         elif not cov.isdigit():  
-            print 'Invalid input. Please try again'
+            print('Invalid input. Please try again')
             continue
         else:
-            break 
+            break
 
 def assemble_type():
     """Asks user what settings they would like to use for SPAdes assembly"""
     global assemble_choice, final_choice
     while True:
-        print '\nWhat type of SPAdes assembly would you like to run?\n'
-        print '   1) SPAdes w/ error correct and assemble'
-        print '   2) SPAdes careful w/ error correct and assemble'
-        print '   3) metaSPAdes w/ error correct and assemble'
-        print '   4) SPAdes w/ assemble only'
-        print '   5) SPAdes careful w/ assemble only'
-        print '   6) metaSPAdes w/ assemble only'
-        print '   7) Custom input (manually enter options)\n'
-        assemble_choice = raw_input('Enter the number for your selection: ')
+        print('\nWhat type of SPAdes assembly would you like to run?\n')
+        print('   1) SPAdes w/ error correct and assemble')
+        print('   2) SPAdes careful w/ error correct and assemble')
+        print('   3) metaSPAdes w/ error correct and assemble')
+        print('   4) SPAdes w/ assemble only')
+        print('   5) SPAdes careful w/ assemble only')
+        print('   6) metaSPAdes w/ assemble only')
+        print('   7) Custom input (manually enter options)\n')
+        assemble_choice = input('Enter the number for your selection: ')
         if assemble_choice == '1':
             final_choice = 'SPAdes w/ error correction and assembly'
             break
@@ -60,12 +68,12 @@ def assemble_type():
             final_choice = 'metaSPAdes w/ assemble only'
             break
         elif assemble_choice == '7': 
-            print '\nEnter modifiers/parameters as you would enter then into a manual SPAdes run (eg. --meta).'
-            print 'Do not enter input file name(s) and output folder name as they will be automatically selected.'
-            final_choice = raw_input('Enter custom options: ')
+            print('\nEnter modifiers/parameters as you would enter then into a manual SPAdes run (eg. --meta).')
+            print('Do not enter input file name(s) and output folder name as they will be automatically selected.')
+            final_choice = input('Enter custom options: ')
             break
         else:
-            print 'Invalid input. Please try again'
+            print('Invalid input. Please try again')
             continue
 
 def parameter_input():
@@ -74,29 +82,32 @@ def parameter_input():
         size_input()
         cov_input()
         assemble_type()
-        print '\n***CURRENT SETTINGS***\n   - Size cut-off:', size, 'bp\n   - Coverage cut-off:', cov, 'times\n   - Assembly type:', final_choice
-        begin = raw_input('\nContinue (Y/N)? ').lower()
+        print('\n***CURRENT SETTINGS***\n   - Size cut-off:', size, 'bp\n   - Coverage cut-off:', cov, 'times\n   - Assembly type:', final_choice)
+        begin = input('\nContinue (Y/N)? ').lower()
         if begin[0] == 'y':
             break
         else:
-            print 'Please try again. \n'
+            print('Please try again. \n')
             continue
 
-def fasta_to_tab():
-    """Converts fasta output from SPAdes into tab format for easier filtering"""
-    with open(out + '/' + 'contigs.fasta', 'r') as f, open(out + '/' + 'contigs.tab', 'w') as file_out:
-        for line in f:
-            line = line.strip()
-            if line[0] == '>':
-                 file_out.write('{}\t'.format(line))
-            else:
-                 file_out.write('{}\n'.format(line))
+def size_and_cov_filter():
+    """ Filters SPAdes output by size and coverage """
 
-def size_filter():
+    contig_dict = defaultdict(list)
+        
+    for fasta in glob.glob('*/contigs.fasta'):
+            
+        contig_dict[fasta] = [rec for rec in SeqIO.parse(fasta, 'fasta')]
+            
+    for keys,values in contig_dict.items():
+            
+        contig_dict[keys] = [v for v in values if float(v.name.split('_')[5]) >= float(cov) and float(v.name.split('_')[3]) >= float(size)]
 
-def pre_blast_filter():
-    fasta_to_tab()
-    subprocess.call([])
+    for keys,values in contig_dict.items():
+        
+        filtered_filename = str.replace(keys,".fasta","_filtered.fasta")
+        
+        SeqIO.write(values, filtered_filename, 'fasta')
 
 def pipeline():
     """Finds each set of paired reads and assigns them to variable R1 and R2.
@@ -105,7 +116,7 @@ def pipeline():
     for file in glob.glob('*_R1_*fastq*'):
         global R1, R2, out
         R1 = file
-        R2 = string.replace(R1, '_R1_', '_R2_')
+        R2 = str.replace(R1, '_R1_', '_R2_')
         out = re.sub(r'.fastq.*', '', R1) + '_SpadesOutput'
         if assemble_choice == '1':                              
             subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out])
@@ -125,3 +136,4 @@ def pipeline():
 
 parameter_input()
 pipeline()
+size_and_cov_filter()
