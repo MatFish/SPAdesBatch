@@ -92,21 +92,13 @@ def parameter_input():
 
 def size_and_cov_filter():
     """ Filters SPAdes output by size and coverage """
-
-    contig_dict = defaultdict(list)
-        
-    for fasta in glob.glob('*/contigs.fasta'):
-            
-        contig_dict[fasta] = [rec for rec in SeqIO.parse(fasta, 'fasta')]
-            
-    for keys,values in contig_dict.items():
-            
+    contig_dict = defaultdict(list) 
+    for fasta in glob.glob('*/contigs.fasta'):            
+        contig_dict[fasta] = [rec for rec in SeqIO.parse(fasta, 'fasta')]           
+    for keys,values in contig_dict.items():            
         contig_dict[keys] = [v for v in values if float(v.name.split('_')[5]) >= float(cov) and float(v.name.split('_')[3]) >= float(size)]
-
-    for keys,values in contig_dict.items():
-        
-        filtered_filename = str.replace(keys,".fasta","_filtered.fasta")
-        
+    for keys,values in contig_dict.items():        
+        filtered_filename = str.replace(keys,".fasta","_filtered.fasta")        
         SeqIO.write(values, filtered_filename, 'fasta')
 
 def pipeline():
