@@ -3,6 +3,7 @@
 import subprocess
 import glob
 from Bio import SeqIO
+from Bio.Blast.Applications import NcbiblastnCommandline
 from collections import defaultdict
 import re
 
@@ -99,33 +100,42 @@ def size_and_cov_filter():
         contig_dict[keys] = [v for v in values if float(v.name.split('_')[5]) >= float(cov) and float(v.name.split('_')[3]) >= float(size)]
     for keys,values in contig_dict.items():        
         filtered_filename = str.replace(keys,".fasta","_filtered.fasta")        
-        SeqIO.write(values, filtered_filename, 'fasta')
+        SeqIO.write(values, filtered_filename, 'fasta')       
 
 def pipeline():
     """Finds each set of paired reads and assigns them to variable R1 and R2.
     Generates name for output file from name of R1.
-    Runs SPAdes assembly on all paired files in current directory."""
+    Runs SPAdes assembly on all paired files in current directory.
+    Filters SPAdes results and runs local blastn search."""
     for file in glob.glob('*_R1_*fastq*'):
         global R1, R2, out
         R1 = file
         R2 = str.replace(R1, '_R1_', '_R2_')
         out = re.sub(r'.fastq.*', '', R1) + '_SpadesOutput'
         if assemble_choice == '1':                              
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out])
         elif assemble_choice == '2':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--careful'])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--careful'])
         elif assemble_choice == '3':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--meta'])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--meta'])
         elif assemble_choice == '4':                                                                                                                                            
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--only-assembler'])                                                                       
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--only-assembler'])                                                                       
         elif assemble_choice == '5':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--careful', '--only-assembler'])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--careful', '--only-assembler'])
         elif assemble_choice == '6':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, '--meta', '--only-assembler'])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, '--meta', '--only-assembler'])
         elif assemble_choice == '7':
-            subprocess.call(['echo', 'spades.py', '-1', R1, '-2', R2, '-o', out, final_choice])
+            subprocess.call(['spades.py', '-1', R1, '-2', R2, '-o', out, final_choice])
         size_and_cov_filter()
+        blast_contig()
+
+def blast_contig():
+    """Performs local blastn search of filtered SPAdes contigs against nr/nt database.
+    Using subprocess call for now, but may try to implement biopython in the future.
+    Added 'export BLASTDB=/home/bio/BLASTDB' to ~/.bashrc to set BLASTDB environment variable."""
+    query = out + '/contigs_filtered.fasta'
+    output = out + '/BlastResults'
+    subprocess.call(['blastn', '-task', 'megablast', '-query', query, '-out', output, '-outfmt', '6 qseqid sseqid pident length qlen stitle sblastnames', '-num_alignments', '1', '-max_hsps', '1', '-db', 'nt', '-num_threads', '56'])
 
 parameter_input()
 pipeline()
-
